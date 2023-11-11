@@ -18,7 +18,17 @@ const path = require("node:path")
 const API_URL_BASE = "https://pokeapi.co/api/v2/pokemon/"
 
 function downloadPokemonPicture (targetId = getRandomPokemonId()) {
-
+    return new Promise(async (resolve, reject) => {
+        try {
+        // step 1: get the image URL
+        let newUrl = await getPokemonPictureUrl(targetId)
+        // step 2: do the download
+        let saveFileLocation = await savePokemonPictureToDisk(newUrl, "ExampleImage.png", "images");
+        resolve(saveFileLocation);
+        } catch (error) {
+            reject(error);
+        }
+    })
 }
 // generate a random number between 1 and 1017
 function getRandomPokemonId() {
@@ -39,12 +49,31 @@ async function getPokemonPictureUrl(targetId = getRandomPokemonId()) {
     let data = await response.json().catch(error => {
         throw new Error("API did not return valid JSON")
     })
-    return data.sprites.other["official-artwork"].front_default;
+    return data.sprites.other["official-artwork"].front_shiny;
 }
 
 //Download that image and save it to the computer
 //return the downloaded image's file path
-async function savePokemonPictureToDisk(targeUrl, targetDownloadFilename, targetDownloadDirectory = ".") {
+async function savePokemonPictureToDisk(targetUrl, targetDownloadFilename, targetDownloadDirectory = ".") {
+    // fetch request to the image
+    let imageData = await fetch(targetUrl).catch(error => {
+        throw new Error("Image failed to download");
+    })
+    //check if the target directory exists
+    //make a directory if we need too
+    if (!fs.existsSync(targetDownloadDirectory)) {
+        await mkdir(targetDownloadDirectory);
+    }
+
+    let fullFileDestination = path.join(targetDownloadDirectory, targetDownloadFilename);
+ 
+    let fileDownloadStream = fs.createWriteStream(fullFileDestination);
+
+    await finished(Readable.fromWeb(imageData.body).pipe(fileDownloadStream)).catch(error => {
+        throw new Error("Failed to save content to disk")
+    })
+// return the saved image location
+    return fullFileDestination
 
 }
 

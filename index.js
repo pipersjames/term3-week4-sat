@@ -1,8 +1,8 @@
-const { downloadPokemonPicture} = require("./downloader")
+const { downloadPokemonPicture } = require("./downloader")
 
 
 // it returns a promise
-downloadPokemonPicture().then(saveFileOutput => {
+downloadPokemonPicture().then(savedFileOutput => {
     console.log("new image is saved to: " + savedFileOutput);
 
 }).catch(error => {

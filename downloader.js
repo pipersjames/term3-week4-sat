@@ -6,7 +6,7 @@ const {mkdir} = require("node:fs/promises");
 
 //stream data, safer than traditional saving/downloading/etc
 // synchronous, so we wait and it is blocking
-const {Readable} = require("node:fs/stream");
+const { Readable } = require('node:stream');
 
 // wait for streaming to finish, it can take time, so it should be a promise
 const {finished} = require("node:stream/promises");
@@ -23,7 +23,9 @@ function downloadPokemonPicture (targetId = getRandomPokemonId()) {
         // step 1: get the image URL
         let newUrl = await getPokemonPictureUrl(targetId)
         // step 2: do the download
-        let saveFileLocation = await savePokemonPictureToDisk(newUrl, "ExampleImage.png", "images");
+        let response = await fetch(API_URL_BASE + targetId)
+        let data = await response.json();
+        let saveFileLocation = await savePokemonPictureToDisk(newUrl, `Pokemon${data.name}.png`, "images");
         resolve(saveFileLocation);
         } catch (error) {
             reject(error);

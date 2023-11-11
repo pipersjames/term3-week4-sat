@@ -15,21 +15,31 @@ const {finished} = require("node:stream/promises");
 // /folder/subfolder/filename.png etc.
 const path = require("node:path")
 
-
+const API_URL_BASE = "https://pokeapi.co/api/v2/pokemon/"
 
 function downloadPokemonPicture (targetId = getRandomPokemonId()) {
 
 }
 // generate a random number between 1 and 1017
 function getRandomPokemonId() {
-    let pkmId = Math.floor(Math.random()*1017)
-    return pkmId
+    return Math.floor(Math.random()*1017)+1;
 }
 
 //retrieve pokemon data for that number
 //retrieve the image url from that pokemon data
 async function getPokemonPictureUrl(targetId = getRandomPokemonId()) {
+    let response = await fetch(API_URL_BASE + targetId).catch(error => {
+        throw new Error("API failure");
+    });
 
+    if (response.status == "404") {
+        throw new Error("API did not have data for the requested ID")
+    };
+
+    let data = await response.json().catch(error => {
+        throw new Error("API did not return valid JSON")
+    })
+    return data.sprites.other["official-artwork"].front_default;
 }
 
 //Download that image and save it to the computer
